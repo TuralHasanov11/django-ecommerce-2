@@ -3,11 +3,16 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-x+ko+inp_jg7ogdi6^*m68r+p9r47bqwn%t$k0(bs&u&_t+akh'
+SECRET_KEY = os.environ.get("SECRET_KEY", None)
 
-DEBUG = True
+DEBUG = str(os.environ.get("DEBUG")) == "1"
 
-ALLOWED_HOSTS = ['yourdomain.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+if DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    ALLOWED_HOSTS = [os.environ.get("CLIENT_URL"), ]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -20,9 +25,9 @@ INSTALLED_APPS = [
     'store',
     'cart',
     'account',
-    'payment',
     'orders',
-    'checkout'
+    'checkout',
+    "mptt",
 ]
 
 MIDDLEWARE = [
@@ -113,9 +118,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CART_SESSION_ID = 'cart'
 
 # Stripe Payment
-os.environ.setdefault('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Kv2hzLv560bXuLqgEVfRRTSm7hapRXSEz499u5sdhHTIb0RKbByVbQSKVp34MTm3CTVGWd5st7xCtwXBW5CnKtY00Ulsr7K7c')
-STRIPE_SECRET_KEY = 'sk_test_51Kv2hzLv560bXuLqqPRoiDxhSgMLaoUc9FvavcbuoCNd5IXRfD5yqZ7U1EI8ApyiWd7yvpmdbbjYtWW7OoAs3F6F00LyB4rDmb'
-
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", '')
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", '')
+STRIPE_ENDPOINT_SECRET = os.environ.get("STRIPE_ENDPOINT_SECRET", '')
 
 
 # DEV DEBUG

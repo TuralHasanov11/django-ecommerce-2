@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
-from django.conf import settings
 
 
 class Category(MPTTModel):
@@ -41,17 +41,6 @@ class ProductType(models.Model):
     def __str__(self):
         return self.name
 
-
-class ProductSpecification(models.Model):
-    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
-    name = models.CharField(verbose_name=_("Name"), help_text=_("Required"), max_length=255)
-
-    class Meta:
-        verbose_name = _("Product Specification")
-        verbose_name_plural = _("Product Specifications")
-
-    def __str__(self):
-        return self.name
 
 class ProductManager(models.Manager):
     def get_queryset(self):
@@ -111,6 +100,17 @@ class Product(models.Model):
         return self.title
 
 
+class ProductSpecification(models.Model):
+    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
+    name = models.CharField(verbose_name=_("Name"), help_text=_("Required"), max_length=255)
+
+    class Meta:
+        verbose_name = _("Product Specification")
+        verbose_name_plural = _("Product Specifications")
+
+    def __str__(self):
+        return self.name
+        
 class ProductSpecificationValue(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     specification = models.ForeignKey(ProductSpecification, on_delete=models.RESTRICT)

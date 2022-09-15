@@ -20,33 +20,21 @@ class TestViewResponses(TestCase):
                                slug='django-beginners', price='20.00', image='django')
 
     def test_url_allowed_hosts(self):
-        """
-        Test allowed hosts
-        """
         response = self.c.get('/', HTTP_HOST='noaddress.com')
         self.assertEqual(response.status_code, 400)
         response = self.c.get('/', HTTP_HOST='yourdomain.com')
         self.assertEqual(response.status_code, 200)
 
     def test_homepage_url(self):
-        """
-        Test homepage response status
-        """
         response = self.c.get('/')
         self.assertEqual(response.status_code, 200)
 
     def test_category_products_url(self):
-        """
-        Test category response status
-        """
         response = self.c.get(
             reverse('store:category_products', args=['django']))
         self.assertEqual(response.status_code, 200)
 
     def test_product_detail_url(self):
-        """
-        Test items response status
-        """
         response = self.c.get(
             reverse('store:product_detail', args=['django-beginners']))
         self.assertEqual(response.status_code, 200)

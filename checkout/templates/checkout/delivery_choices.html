@@ -74,6 +74,10 @@
   </div>
 </div>
 
+{% endblock %}
+
+
+{% block scripts %}
 <script>
   $('input[type=radio][name=deliveryOption]').on('change', function(e) {
     e.preventDefault();
@@ -81,9 +85,8 @@
       type: "POST",
       url: '{% url "checkout:cart_update_delivery" %}',
       data: {
-        deliveryoption: $(this).val(),
+        delivery_option: $(this).val(),
         csrfmiddlewaretoken: "{{csrf_token}}",
-        action: "post",
       },
       success: function (json) {
         document.getElementById("total").innerHTML = json.total;
@@ -94,6 +97,4 @@
     
   });
 </script>
-
-
-{% endblock %}
+{% endblock  %}

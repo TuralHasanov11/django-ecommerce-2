@@ -3,11 +3,11 @@ from django.utils.translation import gettext_lazy as _
 
 
 class DeliveryOptions(models.Model):
-    DELIVERY_CHOICES = [
-        ("IS", "In Store"),
-        ("HD", "Home Delivery"),
-        ("DD", "Digital Delivery"),
-    ]
+    
+    class DeliveryChoices(models.TextChoices):
+        STORE = 'IS', _('In Store')
+        HOME = 'HD', _('Home Delivery')
+        DIGITAL = 'DD', _('Digital Delivery')
 
     delivery_name = models.CharField(
         verbose_name=_("delivery_name"),
@@ -26,7 +26,7 @@ class DeliveryOptions(models.Model):
         decimal_places=2,
     )
     delivery_method = models.CharField(
-        choices=DELIVERY_CHOICES,
+        choices=DeliveryChoices.choices,
         verbose_name=_("delivery_method"),
         help_text=_("Required"),
         max_length=255,

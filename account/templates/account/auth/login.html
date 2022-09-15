@@ -16,12 +16,12 @@
 
                 {% if form.errors %}
                 <div class="alert alert-primary" role="alert">
-                  Error: Username or Password not correct!
+                  Error: Email or Password not correct!
                 </div>
                 {% endif %}
 
-                <label class="form-label">{{ form.username.label}}</label>
-                {{ form.username}}
+                <label class="form-label">{{ form.email.label}}</label>
+                {{ form.email}}
 
                 <label class="form-label">{{ form.password.label}}</label>
                 {{ form.password}}

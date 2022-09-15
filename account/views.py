@@ -1,140 +1,135 @@
-from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render, get_object_or_404
-from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.decorators.http import (require_GET, require_http_methods,
-                                          require_POST)
-from orders.models import Order
-from store.models import Product
-from .forms import RegistrationForm, UserEditForm, UserAddressForm
-from .models import Account, Address
-from .tokens import account_activation_token
-from django.urls import reverse
-from django.contrib import messages
-from orders.views import userOrders
+from django.contrib import messages, auth
+from django.http import  HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django import urls, dispatch
+from django.utils import http, encoding
+from django.views.decorators import http
+from django.db.models import signals
 
-@require_GET
-@login_required
+from orders import models as orderModels
+from store import models as storeModels
+from account import forms, models as accountModels, tokens, activation as activationMethods
+
+@http.require_GET
+@auth.decorators.login_required
 def dashboard(request):
-    orders = userOrders(request)
+    orders = orderModels.Order.objects.prefetch_related("items").filter(user_id=request.user.id).filter(billing_status=True)
     return render(request,
                   'account/user/dashboard.html',
                   {'section': 'profile', 'orders': orders})
 
-@require_http_methods(["POST", "GET"])
-@login_required
-def edit(request):
-    if request.method == 'POST':
-        user_form = UserEditForm(instance=request.user, data=request.POST)
-
-        if user_form.is_valid():
-            user_form.save()
-    else:
-        user_form = UserEditForm(instance=request.user)
-
-    return render(request,
-                  'account/user/edit.html', {'user_form': user_form})
-
-@require_POST
-@login_required
-def delete(request):
-    user = Account.objects.get(user_name=request.user)
-    user.is_active = False
-    user.save()
-    logout(request)
-    return redirect('account:delete_confirmation')
-
-@require_http_methods(["POST", "GET"])
+@http.require_http_methods(["POST", "GET"])
 def register(request):
 
     if request.user.is_authenticated:
         return redirect('account:dashboard')
 
     if request.method == 'POST':
-        registerForm = RegistrationForm(request.POST)
+        registerForm = forms.RegistrationForm(request.POST)
         if registerForm.is_valid():
             user = registerForm.save(commit=False)
             user.email = registerForm.cleaned_data['email']
             user.set_password(registerForm.cleaned_data['password'])
             user.is_active = False
             user.save()
-            currentSite = get_current_site(request)
-            subject = 'Activate your Account'
-            message = render_to_string('account/auth/activation_email.html', {
-                'user': user,
-                'domain': currentSite.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            user.email_user(subject=subject, message=message)
             return render(request, "account/auth/register_email_confirm.html")
     else:
-        registerForm = RegistrationForm()
+        registerForm = forms.RegistrationForm()
     return render(request, 'account/auth/register.html', {'form': registerForm})
 
-@require_GET
+
+@dispatch.receiver(signals.post_save, sender=accountModels.Account)
+def accountPostRegistered(sender, instance, created, **kwargs):
+    if created:
+        activationMethods.sendEmailConfirmation(user=instance)
+
+
+@http.require_http_methods(["POST", "GET"])
+@auth.decorators.login_required
+def edit(request):
+    if request.method == 'POST':
+        user_form = forms.UserEditForm(instance=request.user, data=request.POST)
+
+        if user_form.is_valid():
+            user_form.save()
+    else:
+        user_form = forms.UserEditForm(instance=request.user)
+
+    return render(request,
+                  'account/user/edit.html', {'user_form': user_form})
+
+@http.require_POST
+@auth.decorators.login_required
+def delete(request):
+    user = accountModels.Account.objects.get(user_name=request.user)
+    user.is_active = False
+    user.save()
+    auth.logout(request)
+    return redirect('account:delete_confirmation')
+
+
+@http.require_GET
 def activate(request, uidb64, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = Account.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        uid = encoding.force_str(http.urlsafe_base64_decode(uidb64))
+        user = accountModels.Account.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, accountModels.Account.DoesNotExist):
         user = None
-    if user is not None and account_activation_token.check_token(user, token):
+    if user and tokens.account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user)
+        auth.login(request, user)
         return redirect('account:dashboard')
     else:
         return render(request, 'account/auth/activation_invalid.html')
 
 
-@login_required
-def viewAddress(request):
-    addresses = Address.objects.filter(account=request.user)
+@auth.decorators.login_required
+def addresses(request):
+    addresses = accountModels.Address.objects.filter(account=request.user)
     return render(request, "account/user/addresses.html", {"addresses": addresses})
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
+@auth.decorators.login_required
+@http.require_http_methods(["GET", "POST"])
 def addAddress(request):
     if request.method == "POST":
-        address_form = UserAddressForm(data=request.POST)
+        address_form = forms.UserAddressForm(data=request.POST)
         if address_form.is_valid():
             address_form = address_form.save(commit=False)
             address_form.account = request.user
             address_form.save()
-            return HttpResponseRedirect(reverse("account:addresses"))
+            return HttpResponseRedirect(urls.reverse("account:addresses"))
     else:
-        address_form = UserAddressForm()
+        address_form = forms.UserAddressForm()
     return render(request, "account/user/edit_addresses.html", {"form": address_form})
 
-@login_required
-@require_http_methods(["GET", "POST"])
+
+@auth.decorators.login_required
+@http.require_http_methods(["GET", "POST"])
 def editAddress(request, id):
     if request.method == "POST":
-        address = Address.objects.get(pk=id, account=request.user)
-        address_form = UserAddressForm(instance=address, data=request.POST)
+        address = accountModels.Address.objects.get(pk=id, account=request.user)
+        address_form = forms.UserAddressForm(instance=address, data=request.POST)
         if address_form.is_valid():
             address_form.save()
-            return HttpResponseRedirect(reverse("account:addresses"))
+            return HttpResponseRedirect(urls.reverse("account:addresses"))
     else:
-        address = Address.objects.get(pk=id, account=request.user)
-        address_form = UserAddressForm(instance=address)
+        address = accountModels.Address.objects.get(pk=id, account=request.user)
+        address_form = forms.UserAddressForm(instance=address)
     return render(request, "account/user/edit_addresses.html", {"form": address_form})
 
-@login_required
+
+@auth.decorators.login_required
 def deleteAddress(request, id):
-    address = Address.objects.filter(pk=id, account=request.user).delete()
+    accountModels.Address.objects.filter(pk=id, account=request.user).delete()
     return redirect("account:addresses")
 
-@login_required
+
+@auth.decorators.login_required
 def setDefaultAddress(request, id):
-    Address.objects.filter(account=request.user, default=True).update(default=False)
-    Address.objects.filter(pk=id, account=request.user).update(default=True)
+    accountModels.Address.objects.filter(account=request.user, default=True).update(default=False)
+    accountModels.Address.objects.filter(pk=id, account=request.user).update(default=True)
 
     previous_url = request.META.get("HTTP_REFERER")
 
@@ -144,16 +139,15 @@ def setDefaultAddress(request, id):
     return redirect("account:addresses")
 
 
-
-@login_required
+@auth.decorators.login_required
 def wishlist(request):
-    products = Product.objects.filter(user_wishlist=request.user)
-    return render(request, "account/dashboard/user_wish_list.html", {"wishlist": products})
+    products = storeModels.Product.products.filter(user_wishlist=request.user)
+    return render(request, "account/user/wishlist.html", {"wishlist": products})
 
 
-@login_required
+@auth.decorators.login_required
 def addToWishlist(request, id):
-    product = get_object_or_404(Product, id=id)
+    product = get_object_or_404(storeModels.Product, id=id)
     if product.user_wishlist.filter(id=request.user.id).exists():
         product.user_wishlist.remove(request.user)
         messages.success(request, product.title + " has been removed from your WishList")
@@ -161,10 +155,3 @@ def addToWishlist(request, id):
         product.user_wishlist.add(request.user)
         messages.success(request, "Added " + product.title + " to your WishList")
     return HttpResponseRedirect(request.META["HTTP_REFERER"])
-
-
-@login_required
-def orders(request):
-    user_id = request.user.id
-    orders = Order.objects.filter(user_id=user_id).filter(billing_status=True)
-    return render(request, "account/dashboard/orders.html", {"orders": orders})

@@ -72,7 +72,7 @@ form.addEventListener('submit', function (ev) {
           if (result.paymentIntent.status === 'succeeded') {
             console.log('payment processed')
 
-            window.location.replace("http://127.0.0.1:8000/payment/order-placed/");
+            window.location.replace("http://127.0.0.1:8000/checkout/payment_successful/");
           }
         }
       });

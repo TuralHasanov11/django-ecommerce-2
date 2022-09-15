@@ -4,6 +4,7 @@ from django.contrib.auth.forms import (AuthenticationForm, PasswordResetForm,
 
 from .models import Account, Address
 
+
 class UserAddressForm(forms.ModelForm):
     class Meta:
         model = Address
@@ -30,8 +31,8 @@ class UserAddressForm(forms.ModelForm):
 
 class UserLoginForm(AuthenticationForm):
 
-    name = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control mb-3', 'placeholder': 'name', 'id': 'login-name'}))
+    email = forms.EmailField(widget=forms.EmailInput(
+        attrs={'class': 'form-control mb-3', 'placeholder': 'email', 'id': 'login-email'}))
     password = forms.CharField(widget=forms.PasswordInput(
         attrs={
             'class': 'form-control',
@@ -59,7 +60,7 @@ class RegistrationForm(forms.ModelForm):
         name = self.cleaned_data['name'].lower()
         accounts = Account.objects.filter(name=name)
         if accounts.count():
-            raise forms.ValidationError("name already exists")
+            raise forms.ValidationError("Name already exists")
         return name
 
     def clean_password2(self):

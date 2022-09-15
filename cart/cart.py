@@ -1,5 +1,7 @@
 from decimal import Decimal
+
 from django.conf import settings
+
 from checkout.models import DeliveryOptions
 from store.models import Product
 
@@ -47,7 +49,7 @@ class Cart():
     def cart_update_delivery(self, deliveryprice=0):
         subtotal = sum(Decimal(item["price"]) * item["quantity"] for item in self.cart.values())
         total = subtotal + Decimal(deliveryprice)
-        return 
+        return total
 
     def get_delivery_price(self):
         newPrice = 0.00
