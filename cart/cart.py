@@ -1,35 +1,40 @@
 from decimal import Decimal
-
 from django.conf import settings
+from cart import models as cartModels, exceptions
+from checkout import models as checkoutModels
+from store import models as productModels
 
-from checkout.models import DeliveryOptions
-from store.models import Product
 
-
-class Cart():
+class CartProcessor:
     def __init__(self, request):
         self.session = request.session
-        cart = self.session.get(settings.CART_SESSION_ID)
-        if settings.CART_SESSION_ID not in request.session:
-            cart = self.session[settings.CART_SESSION_ID] = {}
-        self.cart = cart
+        cart_id = self.session.get(settings.CART_SESSION_ID)
 
-    def add(self, product, quantity):
-        productId = str(product.id)
-
-        if productId in self.cart:
-            self.cart[productId]['quantity'] = quantity
+        if settings.CART_SESSION_ID in request.session:
+            try:
+                cart = cartModels.Cart.objects.prefetch_related("cart_items.product").get_or_create(user=request.user)
+                cart_id = self.session[settings.CART_SESSION_ID] = cart.id
+            except cartModels.Cart.DoesNotExist:
+                cart = {}
+                cart_id = self.session[settings.CART_SESSION_ID] = ""
         else:
-            self.cart[productId] = {'price': str(product.regular_price), 'quantity': quantity}
+            cart_id = self.session[settings.CART_SESSION_ID] = ""
+            cart = {}
 
-        self.save()
+        self.cart = cart
+        self.cart_id = cart_id
+        self.products = []
+        if "cart_items" in cart:
+            for item in cart.cart_items.all:
+                self.cart[item.product.id] = {'price': str(item.product.regular_price), 'quantity': item.quantity}
+            self.products = [item.product for item in cart.cart_items.all]
+
 
     def __iter__(self):
-        productIds = self.cart.keys()
-        products = Product.products.filter(id__in=productIds)
+        
         cart = self.cart.copy()
 
-        for product in products:
+        for product in self.products:
             cart[str(product.id)]['product'] = product
 
         for item in cart.values():
@@ -37,55 +42,84 @@ class Cart():
             item['total_price'] = item['price'] * item['quantity']
             yield item
 
+    # number of items in cart
     def __len__(self):
         return sum(item['quantity'] for item in self.cart.values())
-
-    def update(self, product, quantity):
-        productId = str(product)
-        if productId in self.cart:
-            self.cart[productId]['quantity'] = quantity
-        self.save()
-
-    def cart_update_delivery(self, deliveryprice=0):
-        subtotal = sum(Decimal(item["price"]) * item["quantity"] for item in self.cart.values())
-        total = subtotal + Decimal(deliveryprice)
-        return total
-
-    def get_delivery_price(self):
+    
+    @property
+    def get_delivery_price(self) -> Decimal:
         newPrice = 0.00
 
         if "purchase" in self.session:
-            newPrice = DeliveryOptions.objects.get(id=self.session["purchase"]["delivery_id"]).delivery_price
-
-        return newPrice
-
-    def get_subtotal_price(self):
+            newPrice = checkoutModels.DeliveryOptions.objects.get(id=self.session["purchase"]["delivery_id"]).delivery_price
+        return newPrice  
+    
+    @property
+    def get_subtotal_price(self) -> Decimal:
         return sum(Decimal(item['price']) * item['quantity'] for item in self.cart.values())
+    
+    @property
+    def get_total_price(self) -> Decimal:
+        return self.get_subtotal_price + Decimal(self.get_delivery_price)
 
-    def get_total_price(self):
-        newPrice = 0.00
-        subtotal = sum(Decimal(item["price"]) * item["quantity"] for item in self.cart.values())
 
-        if "purchase" in self.session:
-            newPrice = DeliveryOptions.objects.get(id=self.session["purchase"]["delivery_id"]).delivery_price
+    def update_or_create(self, product: productModels.Product, quantity: int) -> None:
+        try:
+            productId = str(product.id)
 
-        total = subtotal + Decimal(newPrice)
-        return total
+            if productId in self.cart:
+                cartModels.CartItem.objects.filter(cart=self.cart_id, product=product).update(quantity=quantity)
+                self.cart[productId]['quantity'] = quantity
+            else:
+                cartModels.CartItem.objects.create(cart=self.cart_id, product=product, quantity=quantity)
+                self.cart[productId] = {'price': str(product.regular_price), 'quantity': quantity}
 
-    def delete(self, product):
-        productId = str(product)
+            self.save()
+        except:
+            raise exceptions.CartException("Product cannot be added or modified in Shopping cart")
 
-        if productId in self.cart:
-            del self.cart[productId]
-            print(productId)
+
+    def update_delivery(self, deliveryType: checkoutModels.DeliveryOptions) -> Decimal:
+
+        if "purchase" not in self.session:
+            self.session["purchase"] = {
+                "delivery_id": deliveryType.id,
+            }
+        else:
+            self.session["purchase"]["delivery_id"] = deliveryType.id
             self.save()
 
-    def clear(self):
-        del self.session["address"]
-        del self.session["purchase"]
-        del self.session[settings.CART_SESSION_ID]
-        self.save() 
+        total = self.get_subtotal_price() + Decimal(deliveryType.delivery_price)
+        return total
 
-    def save(self):
+
+    def delete(self, product: productModels.Product) -> None:
+        productId = str(product)
+
+        try:
+            productId = str(product.id)
+
+            if productId in self.cart:
+                cartModels.CartItem.objects.filter(cart=self.cart_id, product=product).delete()
+                del self.cart[productId]
+                self.save()
+        except:
+            raise exceptions.CartException("Product is not added to Shopping cart")
+
+
+    def clear(self) -> None:
+        try:
+            cartModels.Cart.objects.get(id=self.cart_id).delete()
+            del self.session["address"]
+            del self.session["purchase"]
+            del self.session[settings.CART_SESSION_ID]
+            self.save()
+        except:
+            raise exceptions.CartException("Shopping cart cannot be cleared")
+
+
+    def save(self) -> None:
         self.session.modified = True
+                
+
 

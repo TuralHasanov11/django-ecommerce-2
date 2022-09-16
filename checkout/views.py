@@ -1,21 +1,13 @@
-import json
-from locale import currency
-import os
 from django import contrib,  http
 from django.shortcuts import render
 from django.contrib.auth import decorators
-from django.views.decorators import csrf, http as httpDecorators
-from django.conf import settings
+from django.views.decorators import http as httpDecorators
 from django.views.generic.base import TemplateView
 from account import models as accountModels
-from cart.cart import Cart
+from cart.cart import CartProcessor
 from orders import models as orderModels
 from checkout import models, payment
-from orders.views import orderPaymentConfirmation
-import stripe
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
-endpoint_secret = settings.STRIPE_ENDPOINT_SECRET
+from cart import exceptions as cartExceptions
 
 
 @decorators.login_required
@@ -27,22 +19,18 @@ def deliveryChoices(request):
 @httpDecorators.require_POST
 @decorators.login_required
 def cartUpdateDelivery(request):
-    cart = Cart(request)
-    deliveryOption = int(request.POST.get("delivery_option"))
-    deliveryType = models.DeliveryOptions.objects.get(id=deliveryOption)
-    updatedTotalPrice = cart.cart_update_delivery(deliveryType.delivery_price)
+    try:
+        cart = CartProcessor(request)
+        deliveryOption = int(request.POST.get("delivery_option"))
+        deliveryType = models.DeliveryOptions.objects.get(id=deliveryOption)
+        updatedTotalPrice = cart.update_delivery(deliveryType=deliveryType)
 
-    session = request.session
-    if "purchase" not in request.session:
-        session["purchase"] = {
-            "delivery_id": deliveryType.id,
-        }
-    else:
-        session["purchase"]["delivery_id"] = deliveryType.id
-        session.modified = True
+        return http.JsonResponse({"total": updatedTotalPrice, "delivery_price": deliveryType.delivery_price})
+    except models.DeliveryOptions.DoesNotExist:
+        return http.HttpResponseNotFound("Delivery option not found")
+    except cartExceptions.CartException as err:
+        return http.HttpResponseBadRequest(err.message)
 
-    response = http.JsonResponse({"total": updatedTotalPrice, "delivery_price": deliveryType.delivery_price})
-    return response
 
 
 @decorators.login_required
@@ -68,70 +56,39 @@ def deliveryAddress(request):
 def paymentSelection(request):
 
     if "address" not in request.session:
-        contrib.messages.success(request, "Please select address option")
+        contrib.messages.warning(request, "Please select address option")
         return http.HttpResponseRedirect(request.META["HTTP_REFERER"])
 
-    return render(request, "checkout/payment_selection.html", {})
+    cart = CartProcessor(request)
+    total = str(cart.get_total_price())
+    total = int(total.replace('.', ''))
 
+    paymentType = request.GET.get("payment_type", "card")
+
+    result = {}
+    if paymentType in payment.paymentSystems:
+        paymentInstance = payment.paymentSystems[paymentType]
+        result["paymentItem"] = paymentInstance.integrator.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str"))
+        result["keys"] = paymentInstance.credentials
+
+    return render(request, 'checkout/payment_selection.html', {"paymentData": result})
 
 @decorators.login_required
 def paymentSuccessful(request):
     try:
-        orders = orderModels.Order.objects.filter(user_id = request.user.id).filter(billing_status = True)    
-        cart = Cart(request)
+        orderModels.Order.objects.filter(user=request.user).filter(billing_status = True)    
+        cart = CartProcessor(request)
         cart.clear()
+        contrib.messages.success(request, "Payment Successful")
         return render(request, "checkout/payment_successful.html", {})
     except orderModels.Order.DoesNotExist:
-        return http.HttpResponseNotFound()         
+        return http.HttpResponseNotFound("Order not found")   
+    except cartExceptions.CartException as err:
+        return http.HttpResponseBadRequest(err.message)        
     
 
 
 class Error(TemplateView):
     template_name = 'checkout/error.html'
 
-
-@decorators.login_required
-def cartView(request):
-
-    cart = Cart(request)
-    total = str(cart.get_total_price())
-    total = int(total.replace('.', ''))
-
-    order = orderModels.Order.objects.filter(billing_status=False).filter(user=request.user)
-    paymentSystem = payment.PaymentOptions.CARD
-
-    paymentInstance = paymentSystem(userId=request.user.id, amount=total, currency="str")
-
-    if order:
-        paymentInstance.search(param="client_secret", value=order[0].order_key)
-        if not paymentInstance.paymentItem:
-            paymentInstance.create()
-    else:
-        paymentInstance.create()
-
-    result = paymentInstance.paymentItem
-
-
-    return render(request, 'checkout/payment_selection.html', result)
-
-
-@csrf.csrf_exempt
-def stripeWebhook(request):
-    data = request.body
-    event = None
-
-    try:
-        event = stripe.Webhook.construct_event(
-            data, request.headers.get('stripe-signature'), endpoint_secret
-        )
-    except ValueError as e:
-        return http.JsonResponse(status_code=400, content=e)
-    except stripe.error.SignatureVerificationError as e:
-        return http.JsonResponse(status_code=400, content=e)
-
-    if event.type == 'payment_intent.succeeded':
-        orderPaymentConfirmation(event.data.object.client_secret)
-    else:
-        print('Unhandled event type {}'.format(event.type))
-
-    return http.HttpResponse(status=200)
+   

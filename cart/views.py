@@ -1,47 +1,52 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators import http as httpDecorators
 
-from cart.cart import Cart
+from cart.cart import CartProcessor
+from cart import exceptions
 from store import models
 
 
 def cart(request):
-    cart = Cart(request)
+    cart = CartProcessor(request)
     return render(request, 'cart/summary.html', {'cart': cart}) 
+
 
 @httpDecorators.require_POST
 def cartAdd(request):
-    cart = Cart(request) 
+    try:
+        cart = CartProcessor(request) 
 
-    productId = int(request.POST.get('product_id'))
-    productQuantity = int(request.POST.get('product_quantity'))
-    product = get_object_or_404(models.Product, id= productId)
-    cart.add(product= product, quantity= productQuantity)
-
-    cartQuantity = cart.__len__()
-    
-    return JsonResponse({'quantity': cartQuantity})
+        productId = int(request.POST.get('product_id'))
+        productQuantity = int(request.POST.get('product_quantity'))
+        product = get_object_or_404(models.Product, id= productId)
+        cart.update_or_create(product= product, quantity= productQuantity)
+        
+        return JsonResponse({'quantity': cart.__len__()})
+    except exceptions.CartException as err:
+        return HttpResponseBadRequest(err.message)
+        
 
 @httpDecorators.require_POST
 def cartDelete(request):
-    cart = Cart(request)
-    productId = int(request.POST.get('product_id'))
-    cart.delete(product= productId)
+    try:
+        cart = CartProcessor(request)
+        productId = int(request.POST.get('product_id'))
+        cart.delete(product= productId)
 
-    cartQuantity = cart.__len__()
-    cartTotal = cart.get_total_price()
+        return JsonResponse({'quantity': cart.__len__(), 'subtotal': cart.get_total_price}) 
+    except exceptions.CartException as err:
+        return HttpResponseBadRequest(err.message)
 
-    return JsonResponse({'quantity': cartQuantity, 'subtotal': cartTotal})
 
 @httpDecorators.require_POST
 def cartUpdate(request):
-    cart = Cart(request)
-    productId = int(request.POST.get('product_id'))
-    productQuantity = int(request.POST.get('product_quantity'))
-    cart.update(product= productId, quantity= productQuantity)
+    try:
+        cart = CartProcessor(request)
+        productId = int(request.POST.get('product_id'))
+        productQuantity = int(request.POST.get('product_quantity'))
+        cart.update_or_create(product= productId, quantity= productQuantity)
 
-    cartQuantity = cart.__len__()
-    cartTotal = cart.get_total_price()
-
-    return JsonResponse({'quantity': cartQuantity, 'subtotal': cartTotal})    
+        return JsonResponse({'quantity': cart.__len__(), 'subtotal': cart.get_total_price}) 
+    except exceptions.CartException as err:
+        return HttpResponseBadRequest(err.message)  

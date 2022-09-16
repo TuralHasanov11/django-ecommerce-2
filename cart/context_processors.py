@@ -1,5 +1,5 @@
-from .cart import Cart
+from .cart import CartProcessor
 
 
 def cart(request):
-    return {"cart": Cart(request)}
+    return {"cart": CartProcessor(request)}

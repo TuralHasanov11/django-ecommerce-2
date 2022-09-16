@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators import http
+from django.http import HttpResponseNotFound
 from store import models
 
 
@@ -18,6 +19,9 @@ def categoryProducts(request, category_slug=None):
 
 @http.require_GET
 def productDetail(request, slug):
-    product = models.Product.products.prefetch_related('product_image').get(slug=slug)
-    return render(request, 'store/detail.html', {'product': product})
+    try:
+        product = models.Product.products.prefetch_related('product_image').get(slug=slug)
+        return render(request, 'store/detail.html', {'product': product})
+    except models.Product.DoesNotExist:
+        return HttpResponseNotFound("Product not found")
     

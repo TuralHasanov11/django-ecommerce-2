@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.decorators import http
 from django.contrib.auth import decorators as authDecorators
 
-from cart.cart import Cart
+from cart.cart import CartProcessor
 from orders import models as orderModels
 
 
@@ -16,23 +16,25 @@ def orders(request):
 
 @http.require_POST
 def add(request):
-    cart = Cart(request)
+    cart = CartProcessor(request)
 
     order_key = request.POST.get('order_key')
-    cartTotal = cart.get_total_price()
+    cartTotal = cart.get_total_price
 
-    if orderModels.Order.objects.filter(order_key=order_key).exists():
-        pass
-    else:
-        order = orderModels.Order.objects.create(user_id=request.user.id, full_name='name', address1='add1',
-                            address2='add2', total_paid=cartTotal, order_key=order_key)
-        orderId = order.pk
+    if not orderModels.Order.objects.filter(order_key=order_key).exists():
+        order = orderModels.Order.objects.create(
+            user=request.user, 
+            full_name='name', 
+            address1='add1', 
+            address2='add2', 
+            total_paid=cartTotal, 
+            order_key=order_key
+        )
 
         for item in cart:
-            orderModels.OrderItem.objects.create(order_id=orderId, product=item['product'], price=item['price'], quantity=item['quantity'])
-
-    response = JsonResponse({'success': 'Order has been set'})
-    return response
+            orderModels.OrderItem.objects.create(order_id=order.id, product=item['product'], price=item['price'], quantity=item['quantity'])
+        
+    return JsonResponse({'success': 'Order has been set'})
 
 
 def orderPaymentConfirmation(data):

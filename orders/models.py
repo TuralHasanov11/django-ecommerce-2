@@ -1,8 +1,6 @@
-from decimal import Decimal
-
 from django.conf import settings
 from django.db import models
-
+from cart import models as cartModels 
 from store.models import Product
 
 
@@ -22,6 +20,7 @@ class Order(models.Model):
     order_key = models.CharField(max_length=200)
     payment_option = models.CharField(max_length=200, blank=True)
     billing_status = models.BooleanField(default=False)
+    cart = models.ForeignKey(cartModels.Cart, null=False, blank=False, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ('-created',)
