@@ -21,7 +21,11 @@ def categoryProducts(request, category_slug=None):
 def productDetail(request, slug):
     try:
         product = models.Product.products.prefetch_related('product_image').get(slug=slug)
-        return render(request, 'store/detail.html', {'product': product})
+        if request.user.is_authenticated:
+            wishlist = [item.id for item in models.Product.products.filter(user_wishlist=request.user)]
+        else:
+            wishlist = []
+        return render(request, 'store/detail.html', {'product': product, 'wishlist':wishlist})
     except models.Product.DoesNotExist:
         return HttpResponseNotFound("Product not found")
     

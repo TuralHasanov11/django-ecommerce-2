@@ -20,7 +20,7 @@ def cartAdd(request):
         productId = int(request.POST.get('product_id'))
         productQuantity = int(request.POST.get('product_quantity'))
         product = get_object_or_404(models.Product, id= productId)
-        cart.update_or_create(product= product, quantity= productQuantity)
+        cart.create(product= product, quantity= productQuantity)
         
         return JsonResponse({'quantity': cart.__len__()})
     except exceptions.CartException as err:
@@ -45,7 +45,7 @@ def cartUpdate(request):
         cart = CartProcessor(request)
         productId = int(request.POST.get('product_id'))
         productQuantity = int(request.POST.get('product_quantity'))
-        cart.update_or_create(product= productId, quantity= productQuantity)
+        cart.update(productId= productId, quantity= productQuantity)
 
         return JsonResponse({'quantity': cart.__len__(), 'subtotal': cart.get_total_price}) 
     except exceptions.CartException as err:

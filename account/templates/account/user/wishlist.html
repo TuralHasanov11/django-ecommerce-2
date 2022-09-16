@@ -1,15 +1,14 @@
 {% extends "app.html" %}
 {% block title %}Users Wish List{% endblock %}
 
-{% block sub_content %}
+{% block content %}
 <div class="col-12 mx-auto">
   <h1 class="h3">My Wishlist</h1>
   <div>Manage your Wishlist</div>
   <hr />
 
-  {% if wishlist %}
-  {% for product in wishlist  %}
-
+  {% if products %}
+  {% for product in products  %}
   <div class="card mb-3 rounded-0">
     <div class="row g-0">
       <div class="col-md-2">

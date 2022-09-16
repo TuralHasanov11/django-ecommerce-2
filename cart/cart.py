@@ -12,7 +12,7 @@ class CartProcessor:
 
         if settings.CART_SESSION_ID in request.session:
             try:
-                cart = cartModels.Cart.objects.prefetch_related("cart_items.product").get_or_create(user=request.user)
+                cart, created = cartModels.Cart.objects.prefetch_related("cart_items__product").get_or_create(user=request.user)
                 cart_id = self.session[settings.CART_SESSION_ID] = cart.id
             except cartModels.Cart.DoesNotExist:
                 cart = {}
@@ -21,22 +21,23 @@ class CartProcessor:
             cart_id = self.session[settings.CART_SESSION_ID] = ""
             cart = {}
 
-        self.cart = cart
+        self.cart = {}
         self.cart_id = cart_id
         self.products = []
-        if "cart_items" in cart:
-            for item in cart.cart_items.all:
-                self.cart[item.product.id] = {'price': str(item.product.regular_price), 'quantity': item.quantity}
-            self.products = [item.product for item in cart.cart_items.all]
+        if cart.cart_items:
+            cartItems = list(cart.cart_items.all())
+            for item in cartItems:
+                self.cart[str(item.product.id)] = {'price': str(item.product.regular_price), 'quantity': item.quantity}
+            self.products = [item.product for item in cartItems]
+        self.save()
 
 
     def __iter__(self):
         
         cart = self.cart.copy()
-
         for product in self.products:
             cart[str(product.id)]['product'] = product
-
+        
         for item in cart.values():
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
@@ -46,6 +47,12 @@ class CartProcessor:
     def __len__(self):
         return sum(item['quantity'] for item in self.cart.values())
     
+    @property
+    def get_delivery_option(self):
+        if "purchase" in self.session:
+            return self.session["purchase"]["delivery_id"]
+        return 0
+
     @property
     def get_delivery_price(self) -> Decimal:
         newPrice = 0.00
@@ -63,33 +70,31 @@ class CartProcessor:
         return self.get_subtotal_price + Decimal(self.get_delivery_price)
 
 
-    def update_or_create(self, product: productModels.Product, quantity: int) -> None:
-        try:
-            productId = str(product.id)
-
-            if productId in self.cart:
-                cartModels.CartItem.objects.filter(cart=self.cart_id, product=product).update(quantity=quantity)
-                self.cart[productId]['quantity'] = quantity
-            else:
-                cartModels.CartItem.objects.create(cart=self.cart_id, product=product, quantity=quantity)
+    def create(self, product: productModels.Product, quantity: int):
+        productId = str(product.id)
+        try:            
+            if not productId in self.cart:
+                cartModels.CartItem.objects.create(cart_id=self.cart_id, product=product, quantity=quantity)
                 self.cart[productId] = {'price': str(product.regular_price), 'quantity': quantity}
+                
+            self.save()
+        except Exception as err:
+            raise exceptions.CartException("Product cannot be added or modified in Shopping cart")
+
+    def update(self, productId: int, quantity: int):
+        productId = str(productId)
+        try:            
+            if productId in self.cart:
+                cartModels.CartItem.objects.filter(cart_id=self.cart_id, product_id=productId).update(quantity=quantity)
+                self.cart[productId]['quantity'] = quantity
 
             self.save()
-        except:
+        except Exception as err:
             raise exceptions.CartException("Product cannot be added or modified in Shopping cart")
 
 
-    def update_delivery(self, deliveryType: checkoutModels.DeliveryOptions) -> Decimal:
-
-        if "purchase" not in self.session:
-            self.session["purchase"] = {
-                "delivery_id": deliveryType.id,
-            }
-        else:
-            self.session["purchase"]["delivery_id"] = deliveryType.id
-            self.save()
-
-        total = self.get_subtotal_price() + Decimal(deliveryType.delivery_price)
+    def update_delivery(self, deliveryType: checkoutModels.DeliveryOptions):
+        total = self.get_subtotal_price + deliveryType.delivery_price
         return total
 
 

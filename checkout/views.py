@@ -13,6 +13,9 @@ from cart import exceptions as cartExceptions
 @decorators.login_required
 def deliveryChoices(request):
     deliveryOptions = models.DeliveryOptions.objects.filter(is_active=True)
+    if deliveryOptions:
+        cart = CartProcessor(request)
+        updatedTotalPrice = cart.update_delivery(deliveryType=deliveryOptions[0])
     return render(request, "checkout/delivery_choices.html", {"deliveryOptions": deliveryOptions})
 
 
@@ -24,6 +27,15 @@ def cartUpdateDelivery(request):
         deliveryOption = int(request.POST.get("delivery_option"))
         deliveryType = models.DeliveryOptions.objects.get(id=deliveryOption)
         updatedTotalPrice = cart.update_delivery(deliveryType=deliveryType)
+
+        session = request.session
+        if "purchase" not in request.session:
+            session["purchase"] = {
+                "delivery_id": deliveryType.id,
+            }
+        else:
+            session["purchase"]["delivery_id"] = deliveryType.id
+            session.modified = True
 
         return http.JsonResponse({"total": updatedTotalPrice, "delivery_price": deliveryType.delivery_price})
     except models.DeliveryOptions.DoesNotExist:
@@ -60,18 +72,14 @@ def paymentSelection(request):
         return http.HttpResponseRedirect(request.META["HTTP_REFERER"])
 
     cart = CartProcessor(request)
-    total = str(cart.get_total_price())
+    total = str(cart.get_total_price)
     total = int(total.replace('.', ''))
 
-    paymentType = request.GET.get("payment_type", "card")
+    paymentInstance = payment.paymentSystems[payment.PaymentOptions.CARD]
+    paymentData = paymentInstance.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str", cart_id=cart.cart_id))
 
-    result = {}
-    if paymentType in payment.paymentSystems:
-        paymentInstance = payment.paymentSystems[paymentType]
-        result["paymentItem"] = paymentInstance.integrator.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str", cart_id=cart.cart_id))
-        result["keys"] = paymentInstance.credentials
+    return render(request, 'checkout/payment_selection.html', {"paymentData": paymentData, "paymentOptions": payment.PaymentOptions, "paymentInstance": paymentInstance})
 
-    return render(request, 'checkout/payment_selection.html', {"paymentData": result})
 
 @decorators.login_required
 def paymentSuccessful(request):
@@ -86,8 +94,6 @@ def paymentSuccessful(request):
     except cartExceptions.CartException as err:
         return http.HttpResponseBadRequest(err.message)        
     
-
-
 class Error(TemplateView):
     template_name = 'checkout/error.html'
 

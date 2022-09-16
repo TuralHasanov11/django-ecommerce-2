@@ -10,11 +10,6 @@ from orders.views import orderPaymentConfirmation
 
 # Stripe
 import stripe
-stripe.api_key: str = settings.STRIPE_ENDPOINT_SECRET
-
-
-class PaymentIntegrator(ABC):
-  pass
 
 @dataclass 
 class PaymentData:
@@ -22,13 +17,13 @@ class PaymentData:
   currency: str
   cart_id: int
 
-@dataclass
-class PaymentSystem:
-  integrator: Type[PaymentIntegrator]
-  credentials: dict
 
+class StripePayment:
 
-class StripePayment(PaymentIntegrator):
+  def __init__(self) -> None:
+    stripe.api_key = settings.STRIPE_ENDPOINT_SECRET
+    self.endpoint_secret = settings.STRIPE_SECRET_KEY
+    self.publishable_key = settings.STRIPE_PUBLISHABLE_KEY
 
   def get_or_create_item(self, userId: int, data: PaymentData):
     paymentItem = stripe.PaymentIntent.search(query=f"metadata['user_id']:'{userId}' AND metadata['cart_id']:'{data.cart_id}'")
@@ -44,16 +39,11 @@ class StripePayment(PaymentIntegrator):
 
     return paymentItem
 
-stripeKeys: dict = {
-  "endpoint_secret": settings.STRIPE_SECRET_KEY,
-  "publishable_key": settings.STRIPE_PUBLISHABLE_KEY
-}
-
 class PaymentOptions(Enum):
   CARD: str = "card"
 
 paymentSystems = {
-  PaymentOptions.CARD: PaymentSystem(StripePayment, stripeKeys)
+  PaymentOptions.CARD: StripePayment
 }
 
 

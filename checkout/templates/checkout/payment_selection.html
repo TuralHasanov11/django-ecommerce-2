@@ -137,7 +137,7 @@ Selection{%endblock %} {% block content %}
           <button
             id="submit"
             class="btn btn-primary w-100 fw-bold"
-            data-secret="{{ paymentData["paymentItem"].client_secret }}"
+            data-secret="{{ paymentData.client_secret }}"
           >
             Pay
           </button>
@@ -155,7 +155,7 @@ Selection{%endblock %} {% block content %}
 {% else %}
 <script>
   var STRIPE_PUBLISHABLE_KEY =
-    "{{paymentData['keys']['publishable_key']}}";
+    "{{paymentInstance.publishable_key}}";
   var CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 <script src="https://js.stripe.com/v3/"></script>

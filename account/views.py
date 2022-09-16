@@ -131,18 +131,14 @@ def setDefaultAddress(request, id):
     accountModels.Address.objects.filter(account=request.user, default=True).update(default=False)
     accountModels.Address.objects.filter(pk=id, account=request.user).update(default=True)
 
-    previous_url = request.META.get("HTTP_REFERER")
+    return redirect("checkout:delivery_address")
 
-    if "delivery_address" in previous_url:
-        return redirect("checkout:delivery_address")
-
-    return redirect("account:addresses")
 
 
 @auth.decorators.login_required
 def wishlist(request):
     products = storeModels.Product.products.filter(user_wishlist=request.user)
-    return render(request, "account/user/wishlist.html", {"wishlist": products})
+    return render(request, "account/user/wishlist.html", {"products": products})
 
 
 @auth.decorators.login_required
