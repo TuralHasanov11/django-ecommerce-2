@@ -20,6 +20,7 @@ class PaymentIntegrator(ABC):
 class PaymentData:
   amount: Decimal
   currency: str
+  cart_id: int
 
 @dataclass
 class PaymentSystem:
@@ -30,7 +31,7 @@ class PaymentSystem:
 class StripePayment(PaymentIntegrator):
 
   def get_or_create_item(self, userId: int, data: PaymentData):
-    paymentItem = stripe.PaymentIntent.search(query=f"metadata['user_id']:'{userId}'")
+    paymentItem = stripe.PaymentIntent.search(query=f"metadata['user_id']:'{userId}' AND metadata['cart_id']:'{data.cart_id}'")
 
     if paymentItem.data:
       paymentItem = paymentItem.data[0]
@@ -38,7 +39,7 @@ class StripePayment(PaymentIntegrator):
       paymentItem = stripe.PaymentIntent.create(
         amount=data.amount,
         currency=data.currency,
-        metadata={'user_id': userId}
+        metadata={'user_id': userId, "cart_id": data.cart_id}
       )
 
     return paymentItem

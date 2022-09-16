@@ -68,7 +68,7 @@ def paymentSelection(request):
     result = {}
     if paymentType in payment.paymentSystems:
         paymentInstance = payment.paymentSystems[paymentType]
-        result["paymentItem"] = paymentInstance.integrator.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str"))
+        result["paymentItem"] = paymentInstance.integrator.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str", cart_id=cart.cart_id))
         result["keys"] = paymentInstance.credentials
 
     return render(request, 'checkout/payment_selection.html', {"paymentData": result})
