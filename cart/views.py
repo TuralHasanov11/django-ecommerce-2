@@ -50,3 +50,4 @@ def cartUpdate(request):
         return JsonResponse({'quantity': cart.__len__(), 'subtotal': cart.get_total_price}) 
     except exceptions.CartException as err:
         return HttpResponseBadRequest(err.message)  
+

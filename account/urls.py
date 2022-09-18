@@ -38,4 +38,5 @@ urlpatterns = [
     path("addresses/set_default/<slug:id>/", views.setDefaultAddress, name="set_default_address"),
     path("wishlist/", views.wishlist, name="wishlist"),
     path("wishlist/toggle/<int:id>", views.addToWishlist, name="toggle_wishlist"),
+    path("orders/", views.ordersView, name="orders"),
 ]

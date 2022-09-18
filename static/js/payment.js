@@ -41,7 +41,9 @@ form.addEventListener('submit', function (ev) {
   var customerAddress = document.getElementById("customerAddress").value;
   var customerAddress2 = document.getElementById("customerAddress2").value;
   var postCode = document.getElementById("postCode").value;
-
+  var email = document.getElementById("email").value;
+  var city = document.getElementById("city").value;
+  var customerPhone = document.getElementById("customerPhone").value;
 
   $.ajax({
     type: "POST",
@@ -49,9 +51,17 @@ form.addEventListener('submit', function (ev) {
     data: {
       order_key: clientSecret,
       csrfmiddlewaretoken: CSRF_TOKEN,
+      full_name: customerName,
+      address1: customerAddress,
+      address2: customerAddress2,
+      postal_code: postCode,
+      email,
+      city,
+      phone:customerPhone,
+      payment_option: "card",
     },
     success: function (json) {
-      console.log(json.success)
+      var orderData = json.success
 
       stripe.confirmCardPayment(clientSecret, {
         payment_method: {
@@ -70,9 +80,7 @@ form.addEventListener('submit', function (ev) {
           console.log(result.error.message);
         } else {
           if (result.paymentIntent.status === 'succeeded') {
-            console.log('payment processed')
-
-            window.location.replace("http://127.0.0.1:8000/checkout/payment_successful/");
+            window.location.replace(`http://127.0.0.1:8000/checkout/payment-successful?payment_id=${result.paymentIntent.id}`);
           }
         }
       });

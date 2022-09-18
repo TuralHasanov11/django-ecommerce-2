@@ -51,6 +51,8 @@
                     <div class="col-md-12">
                         <div class="card-body p-1">
                             <h1 class="mb-0 h2 pe-4 pb-4">{{ product.title }}</h1>
+                            <h5 class="mb-0 pe-4 pb-4 text-decoration-none"><a href="{% url 'store:category_products' category_slug=product.category.slug %}">{{ product.category.name }}</a></h4>
+                            <h5 class="mb-0 pe-4 pb-4 text-decoration-none">{{product.product_type.name}}</h4>
                             <div class="bg-light">
 
                                 {% for image in product.product_image.all %}

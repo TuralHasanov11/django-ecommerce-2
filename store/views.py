@@ -13,14 +13,15 @@ def products(request):
 def categoryProducts(request, category_slug=None):
     category = get_object_or_404(models.Category, slug=category_slug)
     products = models.Product.products.prefetch_related('product_image').filter(
-        category__in=models.Category.objects.get(name=category_slug).get_descendants(include_self=True)
+        category=models.Category.objects.get(slug=category_slug)
     )
     return render(request, 'store/category.html', {'category': category, 'products': products})
 
 @http.require_GET
 def productDetail(request, slug):
     try:
-        product = models.Product.products.prefetch_related('product_image').get(slug=slug)
+        product = models.Product.products.select_related('product_type','category').prefetch_related('product_image', 'product_specification_value').get(slug=slug)
+        
         if request.user.is_authenticated:
             wishlist = [item.id for item in models.Product.products.filter(user_wishlist=request.user)]
         else:

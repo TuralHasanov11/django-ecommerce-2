@@ -1,3 +1,4 @@
+import json
 from django import contrib,  http
 from django.shortcuts import render
 from django.contrib.auth import decorators
@@ -8,6 +9,10 @@ from cart.cart import CartProcessor
 from orders import models as orderModels
 from checkout import models, payment
 from cart import exceptions as cartExceptions
+import requests
+
+
+url = 'https://parseapi.back4app.com/classes/City?limit=5&order=-population,name&keys=name,country,countryCode,cityId,objectId'
 
 
 @decorators.login_required
@@ -76,19 +81,27 @@ def paymentSelection(request):
     total = int(total.replace('.', ''))
 
     paymentInstance = payment.paymentSystems[payment.PaymentOptions.CARD]
-    paymentData = paymentInstance.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="str", cart_id=cart.cart_id))
+    
+    paymentData = paymentInstance.get_or_create_item(userId=request.user.id, data=payment.PaymentData(amount=total, currency="usd", cart_id=cart.cart_id))
+    
+    cities = json.loads(requests.get(url, headers={
+            'X-Parse-Application-Id': 'gJ1k7hOymzwNd0uAzWEquCYG7pI53yGaGwzxRdPi', 
+            'X-Parse-Master-Key': '0uAjGdZmuqtoiTpbFTiMj1jpMNmr0lWhREtyyCjM'
+        }).content.decode('utf-8'))
 
-    return render(request, 'checkout/payment_selection.html', {"paymentData": paymentData, "paymentOptions": payment.PaymentOptions, "paymentInstance": paymentInstance})
+    return render(request, 'checkout/payment_selection.html', {"paymentData": paymentData, "paymentOptions": payment.PaymentOptions, "paymentInstance": paymentInstance, "cities":cities["results"]})
 
 
 @decorators.login_required
+@httpDecorators.require_GET
 def paymentSuccessful(request):
     try:
-        orderModels.Order.objects.filter(user=request.user).filter(billing_status = True)    
-        cart = CartProcessor(request)
-        cart.clear()
-        contrib.messages.success(request, "Payment Successful")
-        return render(request, "checkout/payment_successful.html", {})
+        paymentId = request.GET.get("payment_id", None)
+        paymentInstance = payment.paymentSystems[payment.PaymentOptions.CARD]
+        if paymentInstance.succeeded(paymentId):
+            contrib.messages.success(request, "Payment Successful")
+            return render(request, "checkout/payment_successful.html")
+        return http.HttpResponseNotFound("Order not found")   
     except orderModels.Order.DoesNotExist:
         return http.HttpResponseNotFound("Order not found")   
     except cartExceptions.CartException as err:
@@ -96,5 +109,3 @@ def paymentSuccessful(request):
     
 class Error(TemplateView):
     template_name = 'checkout/error.html'
-
-   

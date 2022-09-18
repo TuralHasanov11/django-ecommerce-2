@@ -17,10 +17,9 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     total_paid = models.DecimalField(max_digits=5, decimal_places=2)
-    order_key = models.CharField(max_length=200)
+    order_key = models.CharField(max_length=200, unique=True)
     payment_option = models.CharField(max_length=200, blank=True)
     billing_status = models.BooleanField(default=False)
-    cart = models.ForeignKey(cartModels.Cart, null=False, blank=False, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ('-created',)

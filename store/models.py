@@ -47,8 +47,8 @@ class ProductManager(models.Manager):
         return super(ProductManager, self).get_queryset().filter(is_active=True)
 
 class Product(models.Model):
-    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
-    category = models.ForeignKey(Category, on_delete=models.RESTRICT)
+    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT, related_name="product_type")
+    category = models.ForeignKey(Category, on_delete=models.RESTRICT, related_name="category")
     title = models.CharField(
         verbose_name=_("title"),
         help_text=_("Required"),
@@ -112,8 +112,8 @@ class ProductSpecification(models.Model):
         return self.name
         
 class ProductSpecificationValue(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    specification = models.ForeignKey(ProductSpecification, on_delete=models.RESTRICT)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_specification_value")
+    specification = models.ForeignKey(ProductSpecification, on_delete=models.RESTRICT, related_name="prod_specification")
     value = models.CharField(
         verbose_name=_("value"),
         help_text=_("Product specification value (maximum of 255 words"),

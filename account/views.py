@@ -151,3 +151,9 @@ def addToWishlist(request, id):
         product.user_wishlist.add(request.user)
         messages.success(request, "Added " + product.title + " to your WishList")
     return HttpResponseRedirect(request.META["HTTP_REFERER"])
+
+@auth.decorators.login_required
+@http.require_GET
+def ordersView(request):
+    orders = orderModels.Order.objects.prefetch_related("items__product__product_image").filter(user=request.user, billing_status=True)
+    return render(request, "account/user/orders.html", {"orders": orders})
