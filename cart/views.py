@@ -1,12 +1,14 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators import http as httpDecorators
+from django.contrib import auth
 
 from cart.cart import CartProcessor
 from cart import exceptions
 from store import models
 
-
+@httpDecorators.require_GET
+@auth.decorators.login_required
 def cart(request):
     cart = CartProcessor(request)
     return render(request, 'cart/summary.html', {'cart': cart}) 

@@ -89,7 +89,7 @@ def paymentSelection(request):
             'X-Parse-Master-Key': '0uAjGdZmuqtoiTpbFTiMj1jpMNmr0lWhREtyyCjM'
         }).content.decode('utf-8'))
 
-    return render(request, 'checkout/payment_selection.html', {"paymentData": paymentData, "paymentOptions": payment.PaymentOptions, "paymentInstance": paymentInstance, "cities":cities["results"]})
+    return render(request, 'checkout/payment_selection.html', {"paymentData": paymentData, "paymentOptions": payment.PaymentOptions, "paymentInstance": paymentInstance, "cities":cities["results"], 'cart': cart})
 
 
 @decorators.login_required

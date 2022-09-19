@@ -10,7 +10,7 @@ class CartProcessor:
         self.session = request.session
         cart_id = self.session.get(settings.CART_SESSION_ID)
 
-        if settings.CART_SESSION_ID in request.session:
+        if request.user.is_authenticated and settings.CART_SESSION_ID in request.session:
             try:
                 cart, created = cartModels.Cart.objects.prefetch_related("cart_items__product").get_or_create(user=request.user)
                 cart_id = self.session[settings.CART_SESSION_ID] = cart.id
@@ -24,7 +24,7 @@ class CartProcessor:
         self.cart = {}
         self.cart_id = cart_id
         self.products = []
-        if cart.cart_items:
+        if hasattr(cart,'cart_items'):
             cartItems = list(cart.cart_items.all())
             for item in cartItems:
                 self.cart[str(item.product.id)] = {'price': str(item.product.regular_price), 'quantity': item.quantity}

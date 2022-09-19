@@ -7,10 +7,10 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('orders/', include('orders.urls', namespace='orders')),
-    path('', include('store.urls', namespace='store')),
     path('shopping-cart/', include('cart.urls', namespace='cart')),
     path('account/', include('account.urls', namespace='account')),
     path('checkout/', include('checkout.urls', namespace='checkout')),
+    path('', include('store.urls', namespace='store')),
     path("__debug__/", include(debug_toolbar.urls)),
 ]
 
