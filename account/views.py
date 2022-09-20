@@ -131,7 +131,7 @@ def setDefaultAddress(request, id):
     accountModels.Address.objects.filter(account=request.user, default=True).update(default=False)
     accountModels.Address.objects.filter(pk=id, account=request.user).update(default=True)
 
-    return redirect("checkout:delivery_address")
+    return redirect("account:addresses")
 
 
 

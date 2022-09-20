@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container py-4 text-light">
   <div class="col-12">
     <h1 class="h2">Your Cart</h1>
   </div>
@@ -16,26 +16,26 @@
   </div>
   <hr />
 </div>
-<div class="container">
+<div class="container py-4">
 
   <div class="row g-3">
     {% if cart|length == 0 %}
     <div class="col-12"><p>No product in the cart</p></div>
     {% else %}
-    <div class="col-12 bg-light p-3 d-flex justify-content-between">
+    <div class="col-12 text-light p-3 d-flex justify-content-between">
       <div>
-        <div class="">Sub Total: <span class="fw-bold">£</span>
+        <h3 class="">Sub Total: <span class="fw-bold">£</span>
           <div id="subtotal" class="d-inline-flex fw-bold">{{cart.get_subtotal_price}}</div>
-        </div>
+        </h3>
       </div>
     </div>
-    <div class="col-md-5 col-lg-4 order-md-last p-0 order-3">
+    <div class="col-md-5 col-lg-4 order-md-last p-1 order-3">
       <div class="d-grid gap-2 ">
         <a role="button" href="{% url 'checkout:delivery_choices' %}" class="btn btn-success fw-bold" type="button">Checkout</a>
-        <button class="btn btn-light" type="button">Save for later</button>
+        <a href="{% url 'store:products' %}" class="btn btn-light" type="button">Save for later</a>
       </div>
     </div>
-    <div class="col-md-7 col-lg-8 p-0">
+    <div class="col-md-7 col-lg-8 p-1">
 
       {% for item in cart %}
       {% with product=item.product %}
@@ -63,9 +63,9 @@
                 <option value="">4</option>
               </select>
               <a type="button" id="update-button" data-index="{{product.id}}"
-                class="update-button text-decoration-none small ps-3">Update</a>
+                class="update-button btn btn-primary text-decoration-none small ps-3">Update</a>
               <a type="button" id="delete-button" data-index="{{product.id}}"
-                class="delete-button text-decoration-none small">Delete</a>
+                class="delete-button btn btn-danger text-decoration-none small">Delete</a>
             </div>
           </div>
         </div>

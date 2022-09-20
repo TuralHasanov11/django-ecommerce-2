@@ -2,9 +2,12 @@
 {% block title %}Edit Addresses{% endblock %}
 
 {% block content %}
-<h1 class="h2">Your Addresses</h1>
-<div>Manage your <b>addresses</b> and delivery preferences</div>
-<hr />
+<div class="container py-4">
+  <div class="text-light">
+    <h1 class="h2">Your Addresses</h1>
+  <div>Manage your <b>addresses</b> and delivery preferences</div>
+  <hr />
+  </div>
 <div class="container px-0">
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
     <div class="col">
@@ -29,7 +32,7 @@
     {% for address in addresses %}
     <div class="col">
       <div class="card pb-3">
-        <div class="card-header bg-white small text-muted">
+        <div class="card-header bg-white small text-primary">
           {% if address.default %}
             Default 
           {% endif %}
@@ -43,9 +46,9 @@
           <p class="card-text m-0">{{address.postcode}}</p>
           <p class="card-text m-0">Phone number: {{address.phone}}</p>
           <div class="pt-5">
-            <a href="{% url 'account:edit_address' address.id %}" class="text-decoration-none">Edit</a>
+            <a href="{% url 'account:edit_address' address.id %}" class="text-decoration-none text-warning">Edit</a>
             |
-            <a href="{% url 'account:delete_address' address.id %}" class="text-decoration-none">Delete</a>
+            <a href="{% url 'account:delete_address' address.id %}" class="text-decoration-none text-danger">Delete</a>
             {% if not address.default %}
             | <a href="{% url 'account:set_default_address' address.id %}" class="text-decoration-none">Set Default</a>
             {% endif %}
@@ -58,4 +61,5 @@
   </div>
 </div>
 
+</div>
 {% endblock %}

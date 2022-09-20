@@ -4,6 +4,10 @@ html, body, p, div{
     font-family: 'Roboto', sans-serif;
 }
 
+body{
+  background-color: #333;
+}
+
 /* CART */
 .cart-quantity{
     color: #fff;
@@ -136,3 +140,70 @@ html, body, p, div{
       flex: 1;
     }
   }
+
+
+  /* Landing Area */
+  .section-top{
+    width: 100%;
+    height: 50vh;
+    /* overflow: hidden; */
+    background-image: url('/static/images/hero1.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    animation: slide 20s infinite;
+}
+
+.landing-cover{
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.landing-content{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.landing-content .banner-header {
+    color: whitesmoke;
+}
+
+@keyframes slide {
+    0%{
+      background-image: url('/static/images/hero1.jpg');
+    }
+
+    50%{
+      background-image: url('/static/images/hero2.jpg');
+
+    }
+}
+
+.album .card .img-fluid{
+  height: 25em;
+}
+
+@media (max-width: 576px) {
+  .album .card .img-fluid{
+    height: 10em;
+  }
+}
+
+@media (max-width: 768px) {
+  .album .card .img-fluid{
+    height: 15em;
+  }
+}
+
+
+@media (max-width: 992px) {
+  .album .card .img-fluid{
+    height: 17.5em;
+  }
+}

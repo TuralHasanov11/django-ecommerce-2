@@ -75,6 +75,8 @@ class Product(models.Model):
                 "max_length": _("The price must be between 0 and 999.99."),
             },
         },
+        default=0,
+        blank=True,
         max_digits=5,
         decimal_places=2,
     )

@@ -2,7 +2,7 @@
 {% block title %}Log-in{% endblock %}
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
   <div class="row no-gutter">
     <div class="col-md-12">
       <div class="login d-flex align-items-center py-5">
@@ -12,7 +12,7 @@
               <form class="account-form p-4 rounded" action="{% url 'account:login' %}" method="post">
 
                 {% csrf_token %}
-                <h3 class="mb-4">Sign In</h3>
+                <h3 class="mb-4 text-light">Sign In</h3>
 
                 {% if form.errors %}
                 <div class="alert alert-primary" role="alert">
@@ -20,10 +20,10 @@
                 </div>
                 {% endif %}
 
-                <label class="form-label">{{ form.email.label}}</label>
+                <label class="form-label text-light">{{ form.email.label}}</label>
                 {{ form.email}}
 
-                <label class="form-label">{{ form.password.label}}</label>
+                <label class="form-label text-light">{{ form.password.label}}</label>
                 {{ form.password}}
                 <div class="d-grid gap-2">
                   <input type="hidden" name="next" value="{{ next }}">
@@ -32,11 +32,11 @@
                 </div>
               </form>
               <div class="d-flex justify-content-center align-items-center">
-                <p class="text-center mx-1">
-                  <a href="{% url "account:pwdreset" %}">Forgotten Password?</a>
+                <p class="text-center text-light mx-1">
+                  <a class="text-light" href="{% url "account:pwdreset" %}">Forgotten Password?</a>
                 </p>
-                <p class="text-center mx-1">
-                  <a href="{% url "account:register" %}">Create an account</a>
+                <p class="text-center text-light mx-1">
+                  <a class="text-light" href="{% url "account:register" %}">Create an account</a>
                 </p>
               </div>
 

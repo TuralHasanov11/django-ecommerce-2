@@ -2,9 +2,9 @@
 {% block title %}Edit Addresses{% endblock %}
 
 {% block content %}
-<div class="col-6 mx-auto">
-  <h1 class="h3">Create/Edit Address</h1>
-  <div>Add a new delivery <b>address</b> and delivery preferences</div>
+<div class="container py-4">
+  <h1 class="h3 text-light">Create/Edit Address</h1>
+  <div class="text-light">Add a new delivery <b>address</b> and delivery preferences</div>
   <hr />
   <form name="address_form" class="account-form" method="post" enctype="multipart/form-data">
     {% if form.errors %}
@@ -13,17 +13,17 @@
     </div>
     {% endif %}
     {% csrf_token %}
-    <label class="small fw-bold">{{ form.full_name.label}}</label>
+    <label class="small fw-bold text-light">{{ form.full_name.label}}</label>
     {{ form.full_name }}
-    <label class="small fw-bold">{{ form.phone.label}}</label>
+    <label class="small fw-bold text-light">{{ form.phone.label}}</label>
     {{ form.phone }}
-    <label class="small fw-bold">{{ form.address_line.label}}</label>
+    <label class="small fw-bold text-light">{{ form.address_line.label}}</label>
     {{ form.address_line }}
-    <label class="small fw-bold">{{ form.address_line2.label}}</label>
+    <label class="small fw-bold text-light">{{ form.address_line2.label}}</label>
     {{ form.address_line2 }}
-    <label class="small fw-bold">{{ form.town_city.label}}</label>
+    <label class="small fw-bold text-light">{{ form.town_city.label}}</label>
     {{ form.town_city }}
-    <label class="small fw-bold">{{ form.postcode.label}}</label>
+    <label class="small fw-bold text-light">{{ form.postcode.label}}</label>
     {{ form.postcode }}
     <button class="btn btn-primary btn-block py-2 mb-4 mt-4 fw-bold w-100" type="button" value="Submit" onclick="submitForm()">
     Add Address

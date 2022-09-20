@@ -3,63 +3,65 @@
 
 {% block content %}
 
-<div class="col-12">
-  <h1 class="h2">User Orders</h1>
-</div>
-<div class="col-12 d-flex justify-content-between">
-  <div>Manage your <b>orders</b> and personal details</div>
-</div>
-<hr />
- <div class="container">
-    {% for order in orders %}
-    <div class="row g-3">
-      <div class="col-12 bg-light p-3 d-flex justify-content-between">
-        <div class="d-flex flex-column">
-
-          <div class="pe-3">{{ order.created }}</div>
-            <div>
-              <div class="item small"><b>Name:</b>  {{order.full_name}}</div>
-              <div class="item small"><b>Address:</b>  {{order.address1}}</div>
-              <div class="item small"><b>Address 2:</b> {{order.address2}}</div>
-              <div class="item small"><b>Postal Code:</b> {{order.post_code}}</div>
-            </div>
-
-      </div>
-        <div class="text-end">
-          Total paid: <span class="fw-bold">£{{ order.total_paid }}</span>
+<div class="container py-4">
+  <div class="text-light">
+    <h1 class="h2 ">User Orders</h1>
+    <div class="d-flex justify-content-between">
+      <div>Manage your <b>orders</b> and personal details</div>
+    </div>
+    <hr />
+  </div>
+   <div class="container">
+      {% for order in orders %}
+      <div class="row g-3">
+        <div class="col-12 bg-light p-3 d-flex justify-content-between">
+          <div class="d-flex flex-column">
+  
+            <div class="pe-3">{{ order.created }}</div>
+              <div>
+                <div class="item small"><b>Name:</b>  {{order.full_name}}</div>
+                <div class="item small"><b>Address:</b>  {{order.address1}}</div>
+                <div class="item small"><b>Address 2:</b> {{order.address2}}</div>
+                <div class="item small"><b>Postal Code:</b> {{order.postal_code}}</div>
+              </div>
+  
         </div>
-      </div>
-      <div class="col-md-5 col-lg-4 order-md-last p-2 order-3">
-        <div class="d-grid gap-2 ">
-          <button class="btn btn-warning" type="button">Problem with order</button>
-          <button class="btn btn-light" type="button">Leave a review</button>
+          <div class="text-end">
+            Total paid: <span class="fw-bold">£{{ order.total_paid }}</span>
+          </div>
         </div>
-      </div>
-      <div class="col-md-7 col-lg-8 p-2">
-        {% for item in order.items.all %}
-        <div class="card mb-3 border-0">
-          <div class="row g-0">
-            <div class="col-md-2 d-none d-md-block">
-            {% for image in item.product.product_image.all %}
-            {% if image.is_feature %}
-            <img class="img-fluid" alt="Responsive image" src="{{ image.image.url }}" alt="{{ image.image.alt_text }}">
-            {% endif %}
-            {% endfor %}
-            </div>
-            <div class="col-md-10">
-              <div class="card-body p-3">
-                <a class="text-decoration-none" href="{{ item.product.get_absolute_url }}">
-                  <p class="card-text small">{{item.product|title}}</p>
-                </a>
+        <div class="col-md-5 col-lg-4 order-md-last p-2 order-3">
+          <div class="d-grid gap-2 ">
+            <button class="btn btn-warning" type="button">Problem with order</button>
+            <button class="btn btn-light" type="button">Leave a review</button>
+          </div>
+        </div>
+        <div class="col-md-7 col-lg-8 p-2">
+          {% for item in order.items.all %}
+          <div class="card mb-3 border-0">
+            <div class="row g-0">
+              <div class="col-md-2 d-none d-md-block">
+              {% for image in item.product.product_image.all %}
+              {% if image.is_feature %}
+              <img class="img-fluid" alt="Responsive image" src="{{ image.image.url }}" alt="{{ image.image.alt_text }}">
+              {% endif %}
+              {% endfor %}
+              </div>
+              <div class="col-md-10">
+                <div class="card-body p-3">
+                  <a class="text-decoration-none" href="{{ item.product.get_absolute_url }}">
+                    <p class="card-text small">{{item.product|title}}</p>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-
+  
+</div>
 
 {% endblock %}

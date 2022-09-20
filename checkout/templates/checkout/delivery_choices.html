@@ -3,7 +3,7 @@
 {% block title %}Delivery Options{%endblock %}
 {% block content %}
 
-<div class="container">
+<div class="container py-4 text-light">
   <div class="col-12">
     <h1 class="h2">Delivery Options</h1>
   </div>
@@ -14,7 +14,7 @@
 </div>
 
 
-<div class="container">
+<div class="container py-4">
 {% if messages %}
 <div class="alert alert-warning" alert-{{ message.tags }} role="alert">
   {% for message in messages  %}
@@ -26,7 +26,7 @@
     {% if deliveryOptions|length == 0 %}
     <div class="col-12">There are no delivery options <a href="{% url 'store:products' %}">Shop</a></div>
     {% else %}
-    <div class="col-md-4 col-lg-4 order-md-last p-0 order-3">
+    <div class="col-md-4 col-lg-4 order-md-last p-0 order-3 text-light">
       <div class="d-flex bd-highlight ms-0">
         <div class="p-2 flex-grow-1 bd-highlight">Sub Total:</div>
         <div class="p-2 bd-highlight"><span class="fw-bold h5">£</span><span id="sub_total"
@@ -47,7 +47,7 @@
     </div>
     <div class="col-md-7 col-lg-8">
       {% for option in deliveryOptions %}
-      <div class="card mb-3 border-1 rounded-0 product-item me-md-4" data-index="{{option.id}}">
+      <div class="card text-bg-warning mb-3 border-1 rounded-0 product-item me-md-4" data-index="{{option.id}}">
         <div class="row g-0">
           <div class="col-md-2 ps-3 ps-md-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-truck mt-2"
@@ -58,12 +58,12 @@
           </div>
           <div class="col-md-9 ps-md-1">
             <div class="card-body p-1">
-              <p class="card-text ps-2 mb-1 pt-1 fw-bold">{{option.delivery_name}}</p>
+              <label for="delivery-{{option.id}}" class="card-text ps-2 mb-1 pt-1 fw-bold">{{option.delivery_name}}</label>
               <p class="card-text ps-2 pb-3">Your order should be delivered within {{option.delivery_timeframe}}</p>
             </div>
           </div>
           <div class="col-md-1 ps-md-1">
-            <input class="align-middle h-100" type="radio" name="deliveryOption" id="{{option.id}}"
+            <input class="align-middle h-100" type="radio" name="deliveryOption" id="delivery-{{option.id}}"
               {% if option.id == cart.get_delivery_option %}checked{% endif %}
               value="{{option.id}}">
           </div>

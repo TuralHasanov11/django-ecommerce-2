@@ -17,12 +17,12 @@
                 <div class="alert alert-primary" role="alert">
                   Details successfully updated!
                 </div>
-                <p class="small text-center pt-0">
+                <p class="small text-light text-center pt-0">
                   <a href="{% url "account:dashboard" %}">Back to Dashboard</a>
                 </p>
                 {%else%}
-                <h3>Change your details</h3>
-                <p>You can edit your account using the following form:</p>
+                <h3 class="text-light">Change your details</h3>
+                <p class="text-light">You can edit your account using the following form:</p>
                 {% endif %}
 
                 {% if form.errors %}
@@ -32,19 +32,19 @@
                 {% endif %}
 
                 {% csrf_token %}
-                <label class="small font-weight-bold">{{ user_form.email.label}}</label>
+                <label class="small text-light font-weight-bold">{{ user_form.email.label}}</label>
                 {{ user_form.email }}
-                <label class="small font-weight-bold">{{ user_form.name.label}}</label>
+                <label class="small text-light font-weight-bold">{{ user_form.name.label}}</label>
                 {{ user_form.name }}
 
                 <button class="btn btn-primary btn-block py-2 mb-4 mt-5 fw-bold w-100" type="submit"
                   value="Save changes">Save Changes</button>
-                <hr class="mb-3">
+                <hr class="mb-3 text-light" >
               </form>
               <form class="account-form px-4" action="{% url "account:delete" %}" method="post">
                 {% csrf_token %}
-                <p class=" h3 pt-4 font-weight-bold">Delete Account</p>
-                <p>Are you sure you want to delete your account?</p>
+                <p class="text-light h3 pt-4 font-weight-bold">Delete Account</p>
+                <p class="text-light">Are you sure you want to delete your account?</p>
                 <button type="submit" role="button"
                   class="btn btn-danger btn-block py-2 mb-4 mt-5 fw-bold w-100">Delete</button>
               </form>

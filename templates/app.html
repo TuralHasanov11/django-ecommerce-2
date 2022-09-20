@@ -40,7 +40,7 @@
                     All
                   </a>
                 </li>
-                {% for key, c in categories %}
+                {% for c in categories %}
                 <li {% if category.slug == c.slug %}class="selected" {% endif %}>
                   <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ c.get_absolute_url }}">
                     <span class="d-inline-block bg-danger rounded-circle p-1"></span>
@@ -52,68 +52,72 @@
             </li>
           </ul>
 
-          {% if request.user.is_authenticated %}
-          <a type="button" role="button" href="{% url "account:logout" %}"
-            class="mx-2 btn btn-outline-secondary border-0 basket-btn">
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                class="bi bi-door-closed" viewBox="0 0 16 16">
-                <path
-                  d="M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1H3V2zm1 13h8V2H4v13z" />
-                <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
-              </svg>
-            </div>
-            <span class="fs15 fw500">Logout</span>
-          </a>
-          <a type="button" role="button" href="{% url "account:wishlist" %}"
-            class="mx-2 btn btn-outline-secondary border-0 basket-btn">
-            <span class="fs15 fw500">Wishlist</span>
-          </a>
-          <a type="button" role="button" href="{% url "account:dashboard" %}"
-            class="mx-2 btn btn-outline-secondary border-0 basket-btn">
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-person"
+          <ul class="navbar-nav mb-2 mb-md-0">
+            {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              <a type="button" role="button" href="{% url "account:logout" %}"
+                class="nav-link btn btn-outline-danger border-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
+                  <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+                </svg>
+                <span class="fw500">Logout</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a type="button" role="button" href="{% url "account:wishlist" %}"
+                class="nav-link btn btn btn-outline-success border-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-suit-heart-fill" viewBox="0 0 16 16">
+                  <path d="M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z"/>
+                </svg>
+                <span class="fw500">Wishlist</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a type="button" role="button" href="{% url "account:dashboard" %}"
+                class="nav-link btn btn-outline-info border-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                  <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                </svg>
+                <span class="fw500">Account</span>
+              </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a type="button" role="button" href="{% url "account:login" %}"
+                class="nav-link btn btn-outline-info border-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                  <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                </svg>
+                <span class="fw500">Login</span>
+              </a>
+            </li>
+            {% endif %}
+            <a type="button" role="button" href="{% url "cart:cart" %}" class="mx-2 btn btn-outline-warning">
+
+              {% with total_quantity=cart|length %}
+              <div id="cart-quantity" class="d-inline-flex">
+                {% if total_quantity > 0 %}
+                {{ total_quantity }}
+                {% else %}
+                0
+                {% endif %}
+              </div>
+              {% endwith %}
+  
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart3"
                 viewBox="0 0 16 16">
                 <path
-                  d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                  d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
               </svg>
-            </div>
-            <span class="fs15 fw500">Account</span>
-          </a>
-          {% else %}
-          <a type="button" role="button" href="{% url "account:login" %}"
-            class="mx-2 btn btn-outline-info border-0 basket-btn">
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                class="bi bi-door-closed" viewBox="0 0 16 16">
-                <path
-                  d="M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1H3V2zm1 13h8V2H4v13z" />
-                <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
-              </svg>
-            </div>
-            <span class="fs15 fw500">Login</span>
-          </a>
-          {% endif %}
+              Cart
+            </a>
+          </ul>
 
-          <a type="button" role="button" href="{% url "cart:cart" %}" class="mx-2 btn btn-outline-warning">
+          
 
-            {% with total_quantity=cart|length %}
-            <div id="cart-quantity" class="d-inline-flex">
-              {% if total_quantity > 0 %}
-              {{ total_quantity }}
-              {% else %}
-              0
-              {% endif %}
-            </div>
-            {% endwith %}
-
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart3"
-              viewBox="0 0 16 16">
-              <path
-                d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-            </svg>
-            Cart
-          </a>
+          
         </div>
         <div class="d-md-none d-lg-none d-xl-none">
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -127,15 +131,11 @@
             </ul>
           </div>
         </div>
-        <form class="d-flex w-100 d-md-none">
-          <input class="form-control me-2" type="search" placeholder="Search products or FAQ" aria-label="Search">
-          <button class="btn btn-outline-secondary" type="submit">Search</button>
-        </form>
       </div>
     </nav>
   </header>
   
-  <main id="content" class="p-4">
+  <main id="content py-5">
     {% block content %} {% endblock %}
   </main>
 

@@ -3,7 +3,7 @@
 {% block title %}Cart Summary{%endblock %}
 {% block content %}
 
-<div class="container">
+<div class="container py-4 text-light">
   <div class="col-12">
     <h1 class="h2">Delivery Address</h1>
   </div>
@@ -14,12 +14,12 @@
 </div>
 
 
-<div class="container">
+<div class="container ">
   <div class="row g-3">
     {% if addresses|length == 0 %}
     <div class="col-12">There are no delivery addresses, <a href="{% url 'account:add_address' %}">add address</a></div>
     {% else %}
-    <div class="col-md-4 col-lg-4 order-md-last p-0 order-3">
+    <div class="col-md-4 col-lg-4 order-md-last p-0 order-3 text-light">
 
       <div class="d-flex bd-highlight ms-0">
         <div class="p-2 flex-grow-1 bd-highlight">Sub Total:</div>
@@ -43,7 +43,7 @@
     <div class="col-md-7 col-lg-8">
       {% for address in addresses %}
       {% if not address.default %}
-      <h1 class="h5 pt-4">Other Addresses</h1>
+      <h1 class="h5 text-light mt-4">Other Addresses</h1>
       {% endif %}
       <div class="card mb-3 border-1 rounded-0 product-item me-md-4" data-index="{{option.id}}">
         <div class="row g-0">

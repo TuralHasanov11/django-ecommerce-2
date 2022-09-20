@@ -27,7 +27,7 @@ class CartProcessor:
         if hasattr(cart,'cart_items'):
             cartItems = list(cart.cart_items.all())
             for item in cartItems:
-                self.cart[str(item.product.id)] = {'price': str(item.product.regular_price), 'quantity': item.quantity}
+                self.cart[str(item.product.id)] = {'price': str(item.product.regular_price-item.product.discount_price), 'quantity': item.quantity}
             self.products = [item.product for item in cartItems]
         self.save()
 
@@ -75,7 +75,7 @@ class CartProcessor:
         try:            
             if not productId in self.cart:
                 cartModels.CartItem.objects.create(cart_id=self.cart_id, product=product, quantity=quantity)
-                self.cart[productId] = {'price': str(product.regular_price), 'quantity': quantity}
+                self.cart[productId] = {'price': str(product.regular_price-product.discount_price), 'quantity': quantity}
                 
             self.save()
         except Exception as err:

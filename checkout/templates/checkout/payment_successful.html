@@ -3,16 +3,13 @@
 {% block title %}Payment Successful{%endblock %}
 {% block content %}
 
-<div class="container">
-  <div class="col-12">
-    <h1 class="h2">Payment Successful</h1>
-  </div>
-  <div class="col-12">
-    <p>Order Summary</p>
-  </div>
-  <hr />
-  <div class="col-12">
-    <p>View all <a href="{% url 'orders:index'%}">orders</a></p>
+<div class="container py-4">
+  <div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold text-success">Payment Successful</h1>
+      <h5 class="col-md-8 fs-4">Order Summary.</h5>
+      <a href="{% url 'account:orders'%}" class="btn btn-primary btn-lg" type="button">View all orders</a>
+    </div>
   </div>
 </div>
 
